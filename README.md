@@ -46,7 +46,6 @@ tasks-app/
 │      ├── main.tsx
 │      └── components/
 │          ├── Login.tsx
-│          └── TaskList.tsx
-│   
+│          └── TaskList.tsx   
 ├── API_DOCS.md
 └── README.md
