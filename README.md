@@ -1,51 +1,33 @@
-# AI Tasks Manager
+# Domicile — Global House Hunting App
 
-An AI-powered task management app built with FastAPI and React.  
-Users can create tasks manually, upload photos to extract task text, and get AI-suggested priority and deadlines.
+AI-powered property search for any city worldwide.
 
-## Features
+## Deploy to Vercel (free, 2 minutes)
 
-- User registration and login with JWT.
-- Create, edit, delete, and list tasks.
-- Upload a photo and convert it into a task.
-- AI-powered priority classification.
-- AI-powered deadline suggestions.
-- PostgreSQL database support.
-- React frontend with a simple task UI.
+1. Push this repo to GitHub
+2. Go to vercel.com → New Project → Import your repo
+3. In **Environment Variables**, add:
+   - `GEMINI_API_KEY` = your key from [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+4. Click Deploy
 
-## Tech Stack
+That's it. No server, no database, no costs.
 
-### Backend
-- Python
-- FastAPI
-- SQLAlchemy
-- PostgreSQL
-- JWT authentication
-- OpenAI API
+## How it works
 
-### Frontend
-- React
-- TypeScript
-- Vite
-- CSS
+- `public/index.html` — the entire frontend (HTML/CSS/JS, no framework)
+- `api/search.js` — Vercel Edge Function that proxies all AI calls to Gemini 2.0 Flash
+- The Gemini API key never touches the browser
 
-## Project Structure
+## Free tier limits
 
-```txt
-tasks-app/
-├── backend/
-│   ├── main.py
-│   ├── auth.py
-│   ├── tasks.py
-│   ├── models.py
-│   ├── schemas.py
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│       ├── App.tsx
-│       ├── main.tsx
-│       └── components/
-│           ├── Login.tsx
-│           └── TaskList.tsx   
-├── API_DOCS.md
-└── README.md
+- Gemini 2.0 Flash: **1,500 requests/day**, resets midnight Pacific
+- Vercel: **100GB bandwidth/month**, unlimited deployments
+- Both are free with no credit card required
+
+## Agents integrated
+
+| Agent | Role |
+|---|---|
+| Gemini 2.0 Flash | Search, Sentiment, Neighborhood scores |
+| Kimi (regex engine) | PDF listing analyzer (client-side) |
+| Copilot (formula) | Excel export scoring |
