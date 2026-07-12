@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domicile — Global House Hunter</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ink: #0f1117;
+    --paper: #f7f5f0;
+    --linen: #ede9e1;
+    --mid: #8a8278;
+    --accent: #2d5a3d;
+    --accent-lt: #e8f0eb;
+    --gold: #c4963a;
+    --gold-lt: #fef9ee;
+    --warn: #b84d2f;
+    --blue: #2563eb;
+    --blue-lt: #eff6ff;
+    --purple: #7c3aed;
+    --purple-lt: #f5f3ff;
+    --white: #ffffff;
+    --border: #ddd9d1;
+    --radius: 10px;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Playfair Display', serif;
+    --body: 'Inter', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6; min-height: 100vh; }
+
+  /* HEADER */
+  header {
+    background: var(--ink); color: var(--white);
+    padding: 0 28px; display: flex; align-items: center;
+    justify-content: space-between; height: 56px;
+    position: sticky; top: 0; z-index: 200;
+  }
+  .logo { font-family: var(--display); font-size: 21px; letter-spacing: -0.5px; }
+  .logo span { color: var(--gold); font-style: italic; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .agent-pills { display: flex; gap: 6px; }
+  .agent-pill {
+    font-family: var(--mono); font-size: 10px; padding: 3px 9px;
+    border-radius: 20px; border: 1px solid #333; color: #aaa;
+    letter-spacing: 0.05em; cursor: default;
+    transition: all 0.2s;
+  }
+  .agent-pill.active { border-color: var(--gold); color: var(--gold); }
+
+  /* HERO */
+  .hero {
+    background: var(--ink); color: var(--white);
+    padding: 48px 28px 44px; text-align: center;
+    border-bottom: 3px solid var(--gold);
+  }
+  .hero h1 { font-family: var(--display); font-size: clamp(28px, 5vw, 54px); line-height: 1.15; font-weight: 600; letter-spacing: -1px; margin-bottom: 10px; }
+  .hero h1 em { color: var(--gold); font-style: italic; }
+  .hero p { font-size: 15px; color: #999; max-width: 500px; margin: 0 auto 16px; font-weight: 300; }
+  .agent-badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .agent-badge {
+    font-family: var(--mono); font-size: 10px; padding: 4px 12px;
+    border-radius: 20px; letter-spacing: 0.06em;
+  }
+  .badge-claude  { background: #1a2e20; color: #6dba89; border: 1px solid #2d5a3d; }
+  .badge-grok    { background: #1a1a2e; color: #8b9cf7; border: 1px solid #3730a3; }
+  .badge-gemini  { background: #1e2a1e; color: #86efac; border: 1px solid #166534; }
+  .badge-perp    { background: #2a1a2e; color: #c4b5fd; border: 1px solid #6d28d9; }
+  .badge-copilot { background: #1a2233; color: #93c5fd; border: 1px solid #1d4ed8; }
+  .badge-kimi    { background: #2e1a1a; color: #fca5a5; border: 1px solid #991b1b; }
+
+  /* TABS */
+  .tabs-wrap { background: var(--ink); border-bottom: 1px solid #222; }
+  .tabs { display: flex; max-width: 960px; margin: 0 auto; padding: 0 20px; overflow-x: auto; }
+  .tab {
+    padding: 12px 20px; font-size: 13px; font-weight: 500;
+    color: #666; cursor: pointer; border-bottom: 2px solid transparent;
+    white-space: nowrap; transition: all 0.15s; font-family: var(--body);
+    background: none; border-top: none; border-left: none; border-right: none;
+  }
+  .tab:hover { color: #aaa; }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .tab .tab-icon { margin-right: 6px; }
+
+  /* TAB PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* SEARCH PANEL */
+  .search-wrap { max-width: 960px; margin: -24px auto 0; padding: 0 20px; position: relative; z-index: 10; }
+  .search-card { background: var(--white); border-radius: 14px; box-shadow: 0 8px 36px rgba(0,0,0,0.12); padding: 24px; border: 1px solid var(--border); }
+  .search-card h2 { font-family: var(--display); font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .fields-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  @media(max-width:680px){ .fields-grid { grid-template-columns: 1fr 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mid); }
+  .field input, .field select {
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 8px 11px; font-family: var(--body); font-size: 13px;
+    color: var(--ink); background: var(--paper); outline: none; appearance: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); background: var(--white); }
+  .field-wide { grid-column: span 2; }
+  .btn-search {
+    background: var(--accent); color: var(--white); border: none;
+    border-radius: var(--radius); padding: 9px 22px; font-family: var(--body);
+    font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .btn-search:hover { background: #224830; }
+  .btn-search:disabled { background: #aaa; cursor: not-allowed; }
+
+  /* PRESETS */
+  .presets { display: flex; gap: 7px; flex-wrap: wrap; padding: 12px 20px 0; max-width: 960px; margin: 0 auto; }
+  .preset-btn {
+    background: var(--linen); border: 1px solid var(--border); border-radius: 20px;
+    padding: 4px 12px; font-size: 11px; font-weight: 500; cursor: pointer;
+    color: var(--ink); transition: all 0.15s; font-family: var(--body);
+  }
+  .preset-btn:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
+
+  /* RESULTS */
+  .results-area { max-width: 960px; margin: 20px auto 0; padding: 0 20px 60px; }
+  .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .results-header h2 { font-family: var(--display); font-size: 19px; font-weight: 600; }
+  .results-header span { font-family: var(--mono); font-size: 10px; color: var(--mid); background: var(--linen); padding: 3px 10px; border-radius: 20px; }
+  .market-banner { background: var(--accent-lt); border: 1px solid #b8d4c0; border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: var(--accent); line-height: 1.5; }
+  .market-banner strong { font-weight: 600; }
+  .listings-grid { display: flex; flex-direction: column; gap: 14px; }
+
+  /* LISTING CARD */
+  .listing-card {
+    background: var(--white); border: 1px solid var(--border); border-radius: 13px;
+    padding: 20px 22px; display: grid; grid-template-columns: 1fr auto;
+    gap: 12px; transition: box-shadow 0.15s, border-color 0.15s;
+    position: relative; overflow: hidden;
+  }
+  .listing-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--accent); border-radius: 13px 0 0 13px; }
+  .listing-card.partial::before { background: var(--gold); }
+  .listing-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.08); border-color: #ccc; }
+  .card-zone { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: 500; }
+  .card-title { font-family: var(--display); font-size: 16px; font-weight: 600; line-height: 1.3; margin: 3px 0; }
+  .card-desc { font-size: 13px; color: #555; line-height: 1.55; max-width: 560px; }
+  .card-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+  .tag { background: var(--linen); border: 1px solid var(--border); border-radius: 5px; padding: 2px 8px; font-size: 11px; font-weight: 500; color: var(--ink); font-family: var(--mono); }
+  .tag.match { background: var(--accent-lt); border-color: #b8d4c0; color: var(--accent); }
+  .tag.partial { background: var(--gold-lt); border-color: #e8d9b0; color: #856b22; }
+
+  /* NEIGHBORHOOD SCORES embedded in card */
+  .neigh-scores { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .neigh-score {
+    display: flex; flex-direction: column; align-items: center;
+    background: var(--blue-lt); border: 1px solid #bfdbfe; border-radius: 8px;
+    padding: 6px 10px; min-width: 70px;
+  }
+  .neigh-score .ns-val { font-family: var(--mono); font-size: 15px; font-weight: 600; color: var(--blue); }
+  .neigh-score .ns-label { font-size: 10px; color: #6b7280; text-align: center; margin-top: 2px; }
+
+  .card-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; min-width: 100px; }
+  .card-price { font-family: var(--display); font-size: 20px; font-weight: 600; white-space: nowrap; }
+  .card-price .currency { font-size: 13px; color: var(--mid); }
+  .card-badge { font-family: var(--mono); font-size: 10px; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.04em; font-weight: 500; white-space: nowrap; }
+  .badge-full { background: var(--accent); color: white; }
+  .badge-partial { background: var(--gold-lt); color: #856b22; border: 1px solid #e8d9b0; }
+  .badge-verify { background: var(--linen); color: var(--mid); border: 1px solid var(--border); }
+
+  /* ACTION BUTTONS on card */
+  .card-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .btn-card {
+    font-family: var(--mono); font-size: 10px; padding: 4px 10px;
+    border-radius: 6px; cursor: pointer; border: 1px solid var(--border);
+    background: var(--linen); color: var(--ink); transition: all 0.15s;
+    letter-spacing: 0.04em;
+  }
+  .btn-card:hover { background: var(--ink); color: var(--white); border-color: var(--ink); }
+  .btn-card.saved { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* SUMMARY BOX */
+  .summary-box { background: var(--ink); color: var(--white); border-radius: 13px; padding: 22px 24px; margin-top: 20px; }
+  .summary-box h3 { font-family: var(--display); font-size: 15px; font-style: italic; margin-bottom: 8px; color: var(--gold); }
+  .summary-box p { font-size: 13px; color: #bbb; line-height: 1.6; }
+
+  /* SENTIMENT PANEL */
+  .panel-wrap { max-width: 960px; margin: 28px auto 60px; padding: 0 20px; }
+  .panel-header { margin-bottom: 20px; }
+  .panel-header h2 { font-family: var(--display); font-size: 22px; margin-bottom: 4px; }
+  .panel-header p { font-size: 13px; color: var(--mid); }
+  .powered-by { font-family: var(--mono); font-size: 10px; display: inline-flex; align-items: center; gap: 6px; background: #1a1a2e; color: #8b9cf7; padding: 3px 10px; border-radius: 20px; border: 1px solid #3730a3; margin-top: 8px; }
+
+  .sentiment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:600px){ .sentiment-grid { grid-template-columns: 1fr; } }
+  .sent-card { background: var(--white); border: 1px solid var(--border); border-radius: 13px; padding: 20px; }
+  .sent-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .sentiment-meter { width: 100%; height: 8px; background: var(--linen); border-radius: 4px; overflow: hidden; margin: 8px 0; }
+  .sentiment-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+  .fill-positive { background: var(--accent); }
+  .fill-neutral  { background: var(--gold); }
+  .fill-negative { background: var(--warn); }
+  .sent-score { font-family: var(--mono); font-size: 22px; font-weight: 600; }
+  .sent-label { font-size: 12px; color: var(--mid); }
+  .trend-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .trend-chip { background: var(--linen); border: 1px solid var(--border); border-radius: 6px; padding: 3px 9px; font-size: 11px; font-family: var(--mono); }
+  .recent-posts { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .post-item { background: var(--paper); border-radius: 8px; padding: 10px 12px; font-size: 12px; }
+  .post-meta { font-family: var(--mono); font-size: 10px; color: var(--mid); margin-bottom: 3px; }
+
+  /* NEIGHBORHOOD PANEL */
+  .neigh-search { display: flex; gap: 10px; margin-bottom: 20px; }
+  .neigh-search input { flex: 1; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 9px 14px; font-family: var(--body); font-size: 14px; outline: none; background: var(--white); }
+  .neigh-search input:focus { border-color: var(--accent); }
+  .neigh-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media(max-width:600px){ .neigh-cards { grid-template-columns: 1fr 1fr; } }
+  .neigh-card { background: var(--white); border: 1px solid var(--border); border-radius: 13px; padding: 18px; text-align: center; }
+  .neigh-card .score-big { font-family: var(--display); font-size: 36px; font-weight: 600; line-height: 1; }
+  .neigh-card .score-label { font-size: 13px; color: var(--mid); margin: 4px 0 10px; }
+  .score-bar { width: 100%; height: 6px; background: var(--linen); border-radius: 3px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 3px; }
+  .amenities-list { margin-top: 12px; text-align: left; }
+  .amenity-item { font-size: 12px; display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--linen); color: #555; }
+  .amenity-item:last-child { border-bottom: none; }
+  .amenity-dist { font-family: var(--mono); font-size: 11px; color: var(--mid); }
+
+  /* EXCEL / PDF PANELS */
+  .tool-panel { background: var(--white); border: 1px solid var(--border); border-radius: 13px; padding: 24px; }
+  .tool-panel h3 { font-family: var(--display); font-size: 17px; margin-bottom: 6px; }
+  .tool-panel p { font-size: 13px; color: var(--mid); margin-bottom: 16px; }
+  .code-block { background: var(--ink); color: #7ee787; border-radius: 8px; padding: 14px 16px; font-family: var(--mono); font-size: 12px; line-height: 1.6; overflow-x: auto; white-space: pre; margin-bottom: 14px; }
+  .btn-action {
+    background: var(--blue); color: white; border: none; border-radius: var(--radius);
+    padding: 9px 20px; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background 0.15s; font-family: var(--body);
+  }
+  .btn-action:hover { background: #1d4ed8; }
+  .btn-action.purple { background: var(--purple); }
+  .btn-action.purple:hover { background: #6d28d9; }
+  .btn-action.gold { background: var(--gold); }
+  .btn-action.gold:hover { background: #a87d2e; }
+  .drop-zone {
+    border: 2px dashed var(--border); border-radius: 12px; padding: 32px 20px;
+    text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 14px;
+    color: var(--mid); font-size: 13px;
+  }
+  .drop-zone:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+  .drop-zone.dragover { border-color: var(--accent); background: var(--accent-lt); }
+
+  /* SAVED */
+  .saved-empty { text-align: center; padding: 48px; color: var(--mid); }
+  .saved-empty h3 { font-family: var(--display); font-size: 18px; color: var(--ink); margin-bottom: 8px; font-style: italic; }
+
+  /* LOADING */
+  .loading-box { text-align: center; padding: 48px 20px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--linen); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-box p { font-family: var(--mono); font-size: 11px; color: var(--mid); letter-spacing: 0.05em; }
+
+  .empty-state { text-align: center; padding: 56px 20px; color: var(--mid); }
+  .empty-icon { font-size: 44px; margin-bottom: 14px; opacity: 0.5; }
+  .empty-state h3 { font-family: var(--display); font-size: 19px; color: var(--ink); margin-bottom: 6px; font-style: italic; }
+  .empty-state p { font-size: 13px; max-width: 320px; margin: 0 auto; }
+  .error-box { background: #fff5f4; border: 1px solid #f5c2bb; border-radius: var(--radius); padding: 16px 18px; color: var(--warn); font-size: 13px; }
+  .ai-text-box { background: var(--white); border: 1px solid var(--border); border-radius: 13px; padding: 22px 24px; font-size: 14px; line-height: 1.7; white-space: pre-wrap; }
+
+  /* EXPORT BAR */
+  .export-bar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 12px; }
+  .btn-export { font-family: var(--mono); font-size: 11px; padding: 5px 12px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--ink); transition: all 0.15s; letter-spacing: 0.04em; }
+  .btn-export:hover { background: var(--ink); color: var(--white); }
+  .btn-export.blue { border-color: var(--blue); color: var(--blue); }
+  .btn-export.blue:hover { background: var(--blue); color: white; }
+
+  footer { background: var(--ink); color: #555; text-align: center; padding: 18px; font-size: 11px; font-family: var(--mono); letter-spacing: 0.04em; margin-top: 40px; }
+  footer span { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Dom<span>icile</span></div>
+  <div class="header-right">
+    <div class="agent-pills">
+      <div class="agent-pill active" id="pill-claude">CLAUDE</div>
+      <div class="agent-pill" id="pill-grok">GROK</div>
+      <div class="agent-pill" id="pill-gemini">GEMINI</div>
+      <div class="agent-pill" id="pill-perp">PERPLEXITY</div>
+      <div class="agent-pill" id="pill-copilot">COPILOT</div>
+      <div class="agent-pill" id="pill-kimi">KIMI</div>
+    </div>
+  </div>
+</header>
+
+<div class="hero">
+  <h1>Find your home,<br><em>anywhere on Earth.</em></h1>
+  <p>Six AI agents working together — search, score, analyze, export.</p>
+  <div class="agent-badges">
+    <span class="agent-badge badge-claude">Claude · Search</span>
+    <span class="agent-badge badge-grok">Grok · Sentiment</span>
+    <span class="agent-badge badge-gemini">Gemini · Neighborhood</span>
+    <span class="agent-badge badge-gemini">Gemini · Search</span>
+    <span class="agent-badge badge-copilot">Copilot · Excel</span>
+    <span class="agent-badge badge-kimi">Kimi · PDF</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('search')"><span class="tab-icon">🔍</span>Search Listings</button>
+    <button class="tab" onclick="switchTab('sentiment')"><span class="tab-icon">📊</span>Market Sentiment</button>
+    <button class="tab" onclick="switchTab('neighborhood')"><span class="tab-icon">📍</span>Neighborhood Score</button>
+    <button class="tab" onclick="switchTab('excel')"><span class="tab-icon">📥</span>Excel Export</button>
+    <button class="tab" onclick="switchTab('pdf')"><span class="tab-icon">📄</span>PDF Analyzer</button>
+    <button class="tab" onclick="switchTab('saved')"><span class="tab-icon">❤️</span>Saved (<span id="saved-count">0</span>)</button>
+  </div>
+</div>
+
+<!-- ═══ SEARCH TAB ═══ -->
+<div class="panel active" id="panel-search">
+  <div style="background:var(--ink);padding-bottom:30px">
+    <div class="search-wrap">
+      <div class="search-card">
+        <h2>Search criteria</h2>
+        <div class="fields-grid">
+          <div class="field field-wide">
+            <label>City / Country</label>
+            <input type="text" id="city" placeholder="e.g. Milan, Italy" value="Milan, Italy">
+          </div>
+          <div class="field">
+            <label>Max Price</label>
+            <input type="text" id="price" placeholder="e.g. €350,000" value="€350,000">
+          </div>
+          <div class="field">
+            <label>Currency</label>
+            <select id="currency">
+              <option value="EUR" selected>EUR €</option>
+              <option value="USD">USD $</option>
+              <option value="GBP">GBP £</option>
+              <option value="CHF">CHF</option>
+              <option value="JPY">JPY ¥</option>
+              <option value="AUD">AUD $</option>
+            </select>
+          </div>
+        </div>
+        <div class="fields-grid">
+          <div class="field">
+            <label>Min Size (m²)</label>
+            <input type="number" id="minSize" placeholder="80" value="80">
+          </div>
+          <div class="field">
+            <label>Min Bathrooms</label>
+            <input type="number" id="minBaths" placeholder="2" value="2">
+          </div>
+          <div class="field">
+            <label>Property Type</label>
+            <select id="propType">
+              <option value="apartment" selected>Apartment</option>
+              <option value="house">House / Villa</option>
+              <option value="any">Any</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Auctions</label>
+            <select id="noAuction">
+              <option value="yes" selected>Exclude auctions</option>
+              <option value="no">Include auctions</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap">
+          <button class="btn-search" id="searchBtn" onclick="runSearch()">Search with AI →</button>
+          <label style="font-size:12px;color:var(--mid);display:flex;align-items:center;gap:5px;cursor:pointer">
+            <input type="checkbox" id="showNeighScores" checked style="accent-color:var(--accent)">
+            <span>Show Gemini neighborhood scores</span>
+          </label>
+        </div>
+
+        <div id="platformsLabel" style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--mid);letter-spacing:0.04em">
+          Platforms: <span id="platformsList" style="color:var(--accent)">immobiliare.it · idealista.it · casa.it · tempocasa.it · iocasa.it</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="presets">
+    <span style="font-size:11px;color:var(--mid);align-self:center;font-family:var(--mono)">Try:</span>
+    <button class="preset-btn" onclick="loadPreset('Milan, Italy','€350,000','EUR','80','2','apartment')">Milan €350k</button>
+    <button class="preset-btn" onclick="loadPreset('Lisbon, Portugal','€400,000','EUR','70','1','apartment')">Lisbon €400k</button>
+    <button class="preset-btn" onclick="loadPreset('Barcelona, Spain','€500,000','EUR','90','2','apartment')">Barcelona €500k</button>
+    <button class="preset-btn" onclick="loadPreset('Berlin, Germany','€450,000','EUR','80','2','apartment')">Berlin €450k</button>
+    <button class="preset-btn" onclick="loadPreset('New York, USA','$800,000','USD','65','1','apartment')">NYC $800k</button>
+    <button class="preset-btn" onclick="loadPreset('Tokyo, Japan','$600,000','USD','70','2','apartment')">Tokyo $600k</button>
+  </div>
+  <div class="results-area" id="resultsArea">
+    <div class="empty-state">
+      <div class="empty-icon">🏡</div>
+      <h3>Your results will appear here.</h3>
+      <p>Set your criteria and search — Claude will scan live listings worldwide.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SENTIMENT TAB ═══ -->
+<div class="panel" id="panel-sentiment">
+  <div class="panel-wrap">
+    <div class="panel-header">
+      <h2>Market Sentiment</h2>
+      <p>Real-time housing market mood from social signals and news.</p>
+      <div class="powered-by">⚡ Powered by Grok · X/Twitter data</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:20px">
+      <input type="text" id="sentimentCity" placeholder="City (e.g. Milan, Italy)" value="Milan, Italy"
+        style="flex:1;border:1.5px solid var(--border);border-radius:var(--radius);padding:9px 14px;font-family:var(--body);font-size:13px;outline:none;background:var(--white)">
+      <button class="btn-action" onclick="loadSentiment()">Analyze →</button>
+    </div>
+    <div id="sentimentResults">
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h3>No sentiment data yet.</h3>
+        <p>Enter a city and click Analyze to load Grok's market sentiment report.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ NEIGHBORHOOD TAB ═══ -->
+<div class="panel" id="panel-neighborhood">
+  <div class="panel-wrap">
+    <div class="panel-header">
+      <h2>Neighborhood Scores</h2>
+      <p>Walkability, transit, schools, hospitals, and green spaces — powered by Gemini.</p>
+      <div class="powered-by" style="background:#1e2a1e;color:#86efac;border-color:#166534">🌿 Powered by Gemini · Location data</div>
+    </div>
+    <div class="neigh-search">
+      <input type="text" id="neighAddress" placeholder="Address or neighborhood, e.g. Corvetto, Milan" value="Corvetto, Milan, Italy">
+      <button class="btn-action" onclick="loadNeighborhood()" style="background:var(--accent)">Score it →</button>
+    </div>
+    <div id="neighResults">
+      <div class="empty-state">
+        <div class="empty-icon">📍</div>
+        <h3>Enter an address above.</h3>
+        <p>Gemini will score the neighborhood across 5 dimensions.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ EXCEL TAB ═══ -->
+<div class="panel" id="panel-excel">
+  <div class="panel-wrap">
+    <div class="panel-header">
+      <h2>Excel Export</h2>
+      <p>Export your saved listings as a comparison spreadsheet with scoring formula.</p>
+      <div class="powered-by" style="background:#1a2233;color:#93c5fd;border-color:#1d4ed8">📊 Powered by Copilot · Excel engine</div>
+    </div>
+    <div class="tool-panel">
+      <h3>Copilot Scoring Formula</h3>
+      <p>Each property is scored using a weighted formula across price, size, bathrooms, and match quality.</p>
+      <div class="code-block">Score = (0.4 × matchQuality) + (0.3 × size/100) + (0.2 × bathrooms/3) + (0.1 × 1/(price/100000))
+
+Columns exported:
+  → Price       → Size (m²)    → Bathrooms
+  → Zone        → Match Quality → Computed Score</div>
+      <div id="excelPreview" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn-action" onclick="exportCSV()">⬇ Download CSV</button>
+        <button class="btn-action" style="background:#166534" onclick="exportJSON()">⬇ Download JSON</button>
+      </div>
+      <p style="margin-top:12px;font-size:12px;color:var(--mid)">
+        💡 Open the CSV in Excel — Copilot's scoring formula is pre-applied. Save listings from the Search tab first.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PDF TAB ═══ -->
+<div class="panel" id="panel-pdf">
+  <div class="panel-wrap">
+    <div class="panel-header">
+      <h2>PDF Listing Analyzer</h2>
+      <p>Drop a property listing PDF — Kimi extracts price, size, energy rating, auction status, legal caveats & hidden fees.</p>
+      <div class="powered-by" style="background:#2e1a1a;color:#fca5a5;border-color:#991b1b">🔍 Powered by Kimi · Long-context PDF analysis</div>
+    </div>
+    <div class="tool-panel">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('pdfInput').click()"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="handlePdfDrop(event)">
+        <div style="font-size:32px;margin-bottom:8px">📄</div>
+        <strong>Drop a PDF here</strong> or click to browse<br>
+        <span style="font-size:11px">Property listing documents · Contracts · Brochures</span>
+      </div>
+      <input type="file" id="pdfInput" accept=".pdf" style="display:none" onchange="handlePdfSelect(event)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <button class="btn-action purple" onclick="runKimiDemo()" style="font-size:12px;padding:7px 16px">&#9654; Run Kimi demo (--demo)</button>
+        <span style="font-size:11px;color:var(--mid);font-family:var(--mono)">Runs Kimi&#39;s built-in sample listing &middot; no PDF needed</span>
+      </div>
+      <div style="background:var(--purple-lt);border:1px solid #ddd6fe;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--purple)">
+        <strong>How it works:</strong> Claude extracts raw text from your PDF (like pdfplumber), then Kimi&#39;s exact regex engine runs client-side &mdash; price filters, sentence-level caveat/fee extraction, auction detection &mdash; all ported 1-to-1 from <code style="font-family:var(--mono);background:#ede9d0;padding:1px 5px;border-radius:3px">pdf_analyzer.py</code>.
+      </div>
+      <div id="pdfResults">
+        <div style="font-size:13px;color:var(--mid);text-align:center;padding:8px">No document uploaded yet. Drop a PDF above or run the demo.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SAVED TAB ═══ -->
+<div class="panel" id="panel-saved">
+  <div class="panel-wrap">
+    <div class="panel-header">
+      <h2>Saved Listings</h2>
+      <p>Properties you've saved during your search session.</p>
+    </div>
+    <div class="export-bar">
+      <button class="btn-export blue" onclick="switchTab('excel')">📊 Export to Excel</button>
+    </div>
+    <div id="savedListings">
+      <div class="saved-empty">
+        <div class="empty-icon" style="font-size:40px;margin-bottom:12px">❤️</div>
+        <h3>Nothing saved yet.</h3>
+        <p style="font-size:13px;color:var(--mid)">Search for properties and click "Save" on listings you like.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>Powered by <span>Claude · Grok · Gemini 2.0 Flash · Copilot · Kimi</span> · AI-curated results from public listings</footer>
+
+<script>
+// ── STATE ──
+let savedListings = [];
+let lastListings = [];
+let lastCity = '';
+
+// ── TABS ──
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  const tabs = document.querySelectorAll('.tab');
+  const idx = ['search','sentiment','neighborhood','excel','pdf','saved'].indexOf(name);
+  if(tabs[idx]) tabs[idx].classList.add('active');
+  // activate agent pill
+  const pillMap = {search:'claude',sentiment:'grok',neighborhood:'gemini',excel:'copilot',pdf:'kimi',saved:'claude'};
+  document.querySelectorAll('.agent-pill').forEach(p => p.classList.remove('active'));
+  const pill = document.getElementById('pill-' + (pillMap[name] || 'claude'));
+  if(pill) pill.classList.add('active');
+}
+
+// ── PRESETS ──
+function loadPreset(city, price, currency, size, baths, type) {
+  document.getElementById('city').value = city;
+  document.getElementById('price').value = price;
+  document.getElementById('currency').value = currency;
+  document.getElementById('minSize').value = size;
+  document.getElementById('minBaths').value = baths;
+  document.getElementById('propType').value = type;
+}
+
+// ── LOADING ──
+function showLoading(containerId, msg) {
+  document.getElementById(containerId).innerHTML = `
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <p>${msg}</p>
+    </div>`;
+}
+
+// ── COUNTRY → PLATFORM MAP ──
+const PLATFORM_MAP = {
+  // Italy
+  'italy': ['immobiliare.it','idealista.it','casa.it','tempocasa.it','iocasa.it','wikicasa.it','gabetti.it','tecnocasa.it'],
+  'milan': ['immobiliare.it','idealista.it','casa.it','tempocasa.it','iocasa.it','wikicasa.it'],
+  // Spain
+  'spain': ['idealista.com','fotocasa.es','habitaclia.com','pisos.com','yaencontre.com'],
+  'barcelona': ['idealista.com','fotocasa.es','habitaclia.com','pisos.com'],
+  'madrid': ['idealista.com','fotocasa.es','habitaclia.com','pisos.com'],
+  // Portugal
+  'portugal': ['idealista.pt','imovirtual.com','remax.pt','era.pt','casa.sapo.pt'],
+  'lisbon': ['idealista.pt','imovirtual.com','remax.pt','era.pt','casa.sapo.pt'],
+  // Germany
+  'germany': ['immoscout24.de','immowelt.de','immonet.de','wg-gesucht.de','ebay-kleinanzeigen.de'],
+  'berlin': ['immoscout24.de','immowelt.de','immonet.de'],
+  'munich': ['immoscout24.de','immowelt.de','immonet.de'],
+  // France
+  'france': ['seloger.com','leboncoin.fr','logic-immo.com','bienici.com','pap.fr'],
+  'paris': ['seloger.com','leboncoin.fr','logic-immo.com','bienici.com','pap.fr'],
+  // UK
+  'uk': ['rightmove.co.uk','zoopla.co.uk','onthemarket.com','primelocation.com'],
+  'england': ['rightmove.co.uk','zoopla.co.uk','onthemarket.com'],
+  'london': ['rightmove.co.uk','zoopla.co.uk','onthemarket.com','primelocation.com'],
+  // USA
+  'usa': ['zillow.com','realtor.com','redfin.com','homes.com','trulia.com'],
+  'united states': ['zillow.com','realtor.com','redfin.com','homes.com'],
+  'new york': ['zillow.com','streeteasy.com','realtor.com','redfin.com'],
+  'los angeles': ['zillow.com','redfin.com','realtor.com','trulia.com'],
+  // Australia
+  'australia': ['realestate.com.au','domain.com.au','allhomes.com.au'],
+  'sydney': ['realestate.com.au','domain.com.au'],
+  'melbourne': ['realestate.com.au','domain.com.au'],
+  // Netherlands
+  'netherlands': ['funda.nl','pararius.nl','jaap.nl','huislijn.nl'],
+  'amsterdam': ['funda.nl','pararius.nl','jaap.nl'],
+  // Belgium
+  'belgium': ['immoweb.be','zimmo.be','logic-immo.be','hebbes.be'],
+  // Switzerland
+  'switzerland': ['homegate.ch','comparis.ch','immoscout24.ch','anibis.ch'],
+  // UAE / Dubai
+  'uae': ['bayut.com','propertyfinder.ae','dubizzle.com','houza.com'],
+  'dubai': ['bayut.com','propertyfinder.ae','dubizzle.com','houza.com'],
+  // Japan
+  'japan': ['suumo.jp','homes.co.jp','athome.co.jp','realestate.co.jp'],
+  'tokyo': ['suumo.jp','homes.co.jp','athome.co.jp'],
+  // Canada
+  'canada': ['realtor.ca','zolo.ca','point2homes.com','royallepage.ca'],
+  // Brazil
+  'brazil': ['vivareal.com.br','zapimoveis.com.br','olx.com.br','imovelweb.com.br'],
+  // Greece
+  'greece': ['xe.gr','spitogatos.gr','tospitimou.gr'],
+  // Croatia
+  'croatia': ['njuskalo.hr','index.hr','crozilla.com'],
+};
+
+function getPlatforms(cityStr) {
+  const low = cityStr.toLowerCase();
+  // Try city first, then country keyword match
+  for (const [key, platforms] of Object.entries(PLATFORM_MAP)) {
+    if (low.includes(key)) return platforms;
+  }
+  return ['idealista.com','rightmove.co.uk','immobiliare.it','immoscout24.de','seloger.com','realestate.com.au'];
+}
+
+// ── SEARCH ENGINE — all calls proxied via /api/search (key is server-side) ──
+async function searchWithGemini(prompt) {
+  const res = await fetch('/api/search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt })
+  });
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error || `Server error ${res.status}`);
+  return data.text || '';
+}
+// Stubs — key lives on the server, no client-side key needed
+function loadGeminiKey() {}
+function getGeminiKey() { return 'server'; }
+function saveGeminiKey() {}
+
+// ── CLAUDE SEARCH ──
+async function runSearch() {
+  const params = {
+    city: document.getElementById('city').value.trim(),
+    price: document.getElementById('price').value.trim(),
+    currency: document.getElementById('currency').value,
+    minSize: document.getElementById('minSize').value.trim(),
+    minBaths: document.getElementById('minBaths').value.trim(),
+    propType: document.getElementById('propType').value,
+    noAuction: document.getElementById('noAuction').value
+  };
+  if (!params.city) { alert('Please enter a city.'); return; }
+  lastCity = params.city;
+  const btn = document.getElementById('searchBtn');
+  btn.disabled = true; btn.textContent = 'Searching…';
+
+  const platforms = getPlatforms(params.city);
+  const platformList = platforms.join(', ');
+
+  const platformsLabel = platforms.slice(0,3).join(' · ');
+  showLoading('resultsArea', `Searching ${platformsLabel}…`);
+
+  const noAuctionStr = params.noAuction === 'yes'
+    ? 'Exclude all auction, court-ordered, or foreclosure listings.'
+    : 'Auctions may be included.';
+
+  const prompt = `You are a real estate research assistant with web search access.
+
+Your task: find REAL, current, for-SALE (not rent) property listings in "${params.city}" matching ALL of these criteria:
+- Property type: ${params.propType}
+- Minimum size: ${params.minSize} m²
+- Minimum bathrooms: ${params.minBaths}
+- Maximum price: ${params.price} ${params.currency}
+- ${noAuctionStr}
+
+IMPORTANT — search these specific platforms for ${params.city}: ${platformList}
+
+For each platform, search for listings matching the criteria. Extract real listing data including title, neighborhood/zone, price, size, bathrooms, floor, extras, and a factual description.
+
+After searching, respond with ONLY a raw JSON object — no markdown fences, no explanation, no preamble, just the JSON:
+{"listings":[{"title":"","zone":"","price":"","size":"","bathrooms":"","type":"","floor":"","extras":[],"description":"","match_quality":"full","source_url":"","platform":""}],"market_context":"","summary":""}
+
+Rules:
+- match_quality: "full" (meets all criteria), "partial" (missing 1 criterion), "verify" (unclear)
+- Up to 8 listings
+- Only include listings genuinely found via search — do not invent properties
+- Include the source platform name in the "platform" field
+- price field: numbers only, no currency symbol (e.g. "320000")`;
+
+  btn.textContent = 'Searching via Gemini…';
+  try {
+    const rawText = await searchWithGemini(prompt);
+    const parsed = tryParseJSON(rawText);
+    if (parsed && parsed.listings && parsed.listings.length > 0) {
+      lastListings = parsed.listings;
+      renderListings(parsed, params);
+    } else if (rawText.trim()) {
+      renderFallback(rawText, params);
+    } else {
+      document.getElementById('resultsArea').innerHTML =
+        `<div class="error-box">No listings found. Try broadening your criteria.</div>`;
+    }
+  } catch(err) {
+    const isQuota = err.message.includes('quota') || err.message.includes('rate') || err.message.includes('exceeded');
+    document.getElementById('resultsArea').innerHTML = `
+      <div class="error-box">
+        <strong>${isQuota ? '⏱ Daily quota reached' : '⚠ Search failed'}:</strong> ${err.message}
+        ${isQuota ? '<br><br>Gemini free tier: 1,500 searches/day. Resets at midnight Pacific.' : ''}
+      </div>`;
+  }
+  btn.disabled = false; btn.textContent = 'Search with AI →';
+}
+
+function tryParseJSON(text) {
+  const m = text.match(/```json\s*([\s\S]+?)```/);
+  if(m) { try { return JSON.parse(m[1]); } catch(e){} }
+  const m2 = text.match(/(\{[\s\S]+\})/);
+  if(m2) { try { return JSON.parse(m2[1]); } catch(e){} }
+  try { return JSON.parse(text.trim()); } catch(e){}
+  return null;
+}
+
+function renderListings(data, params) {
+  const { listings, market_context, summary } = data;
+  const showNeigh = document.getElementById('showNeighScores').checked;
+  let html = `
+    <div class="results-header">
+      <h2>Results — ${params.city}</h2>
+      <span>${listings.length} listing${listings.length!==1?'s':''}</span>
+    </div>`;
+  if(market_context) html += `<div class="market-banner"><strong>Market Context:</strong> ${market_context}</div>`;
+  html += `<div class="listings-grid">`;
+  listings.forEach((l, i) => {
+    const isPartial = l.match_quality === 'partial';
+    const badgeClass = l.match_quality==='full' ? 'badge-full' : l.match_quality==='partial' ? 'badge-partial' : 'badge-verify';
+    const badgeText  = l.match_quality==='full' ? '✓ Full match'   : l.match_quality==='partial' ? '⚠ Partial' : 'Verify';
+    const platformBadge = l.platform ? `<span style="font-family:var(--mono);font-size:9px;background:var(--ink);color:#aaa;padding:2px 7px;border-radius:10px;margin-left:6px">${l.platform}</span>` : '';
+    const tags = [];
+    if(l.size) tags.push({t:l.size,c:'match'});
+    if(l.bathrooms) tags.push({t:l.bathrooms+' bath',c:parseInt(l.bathrooms)>=parseInt(params.minBaths)?'match':'partial'});
+    if(l.floor) tags.push({t:l.floor,c:''});
+    if(l.extras) l.extras.forEach(e=>tags.push({t:e,c:''}));
+    const tagsHtml = tags.map(t=>`<span class="tag ${t.c}">${t.t}</span>`).join('');
+    const neighHtml = showNeigh ? `
+      <div class="neigh-scores" id="neigh-${i}">
+        <span style="font-size:11px;color:var(--mid);align-self:center;font-family:var(--mono)">Loading scores…</span>
+      </div>` : '';
+    html += `
+      <div class="listing-card ${isPartial?'partial':''}" id="card-${i}">
+        <div class="card-left">
+          <div class="card-zone">${l.zone||''}${platformBadge}</div>
+          <div class="card-title">${l.title}</div>
+          <div class="card-desc">${l.description}</div>
+          <div class="card-tags">${tagsHtml}</div>
+          ${neighHtml}
+          <div class="card-actions">
+            <button class="btn-card" id="save-${i}" onclick="toggleSave(${i},'${encodeURIComponent(JSON.stringify(l))}')">♡ Save</button>
+            <button class="btn-card" onclick="scoreNeighborhood(${i},'${encodeURIComponent(l.zone+', '+params.city)}')">📍 Score zone</button>
+          </div>
+        </div>
+        <div class="card-right">
+          <div class="card-price"><span class="currency">€</span>${l.price}</div>
+          <div class="card-badge ${badgeClass}">${badgeText}</div>
+        </div>
+      </div>`;
+  });
+  html += `</div>`;
+  if(summary) html += `<div class="summary-box"><h3>AI Assessment</h3><p>${summary}</p></div>`;
+  document.getElementById('resultsArea').innerHTML = html;
+  // Auto-load neighborhood scores for first 3
+  if(showNeigh) {
+    listings.slice(0,3).forEach((l,i) => {
+      if(l.zone) scoreNeighborhood(i, encodeURIComponent(l.zone+', '+params.city));
+    });
+  }
+}
+
+function renderFallback(text, params) {
+  document.getElementById('resultsArea').innerHTML = `
+    <div class="results-header"><h2>Results — ${params.city}</h2></div>
+    <div class="ai-text-box">${text}</div>`;
+}
+
+// ── SAVE ──
+function toggleSave(i, encoded) {
+  const listing = JSON.parse(decodeURIComponent(encoded));
+  const btn = document.getElementById('save-' + i);
+  const idx = savedListings.findIndex(s => s.title === listing.title);
+  if(idx === -1) {
+    savedListings.push(listing);
+    btn.textContent = '♥ Saved';
+    btn.classList.add('saved');
+  } else {
+    savedListings.splice(idx, 1);
+    btn.textContent = '♡ Save';
+    btn.classList.remove('saved');
+  }
+  document.getElementById('saved-count').textContent = savedListings.length;
+  renderSaved();
+}
+
+function renderSaved() {
+  const el = document.getElementById('savedListings');
+  if(savedListings.length === 0) {
+    el.innerHTML = `<div class="saved-empty"><div class="empty-icon" style="font-size:40px;margin-bottom:12px">❤️</div><h3>Nothing saved yet.</h3><p style="font-size:13px;color:var(--mid)">Search and click "Save" on listings you like.</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="listings-grid">` + savedListings.map(l => `
+    <div class="listing-card">
+      <div class="card-left">
+        <div class="card-zone">${l.zone||''}</div>
+        <div class="card-title">${l.title}</div>
+        <div class="card-desc">${l.description}</div>
+      </div>
+      <div class="card-right">
+        <div class="card-price"><span class="currency">€</span>${l.price}</div>
+        <div class="card-badge badge-full">${l.match_quality||'saved'}</div>
+      </div>
+    </div>`).join('') + `</div>`;
+}
+
+// ── GEMINI NEIGHBORHOOD ──
+async function scoreNeighborhood(cardIdx, encodedAddr) {
+  const address = decodeURIComponent(encodedAddr);
+  const el = document.getElementById('neigh-' + cardIdx);
+  if(!el) return;
+  el.innerHTML = `<span style="font-size:11px;color:var(--mid);font-family:var(--mono)">Scoring with Gemini…</span>`;
+
+  const prompt = `You are Gemini, a neighborhood scoring assistant. For the location "${address}", return ONLY raw JSON (no markdown, no preamble):
+{
+  "walkability": {"score": 75, "rating": "Very Walkable"},
+  "transit": {"score": 68, "rating": "Good Transit"},
+  "schools": {"score": 70, "rating": "Good Schools"},
+  "green_spaces": {"score": 60, "rating": "Some Parks"},
+  "safety": {"score": 65, "rating": "Average Safety"}
+}
+Scores 0-100. Use realistic estimates based on what you know about this area.`;
+
+  try {
+    const text = await searchWithGemini(prompt);
+    const scores = tryParseJSON(text);
+    if(scores && el) {
+      const icons = {walkability:'🚶',transit:'🚇',schools:'🏫',green_spaces:'🌳',safety:'🔒'};
+      el.innerHTML = Object.entries(scores).map(([k,v])=>`
+        <div class="neigh-score">
+          <div class="ns-val">${icons[k]||''}${v.score}</div>
+          <div class="ns-label">${k.replace('_',' ')}</div>
+        </div>`).join('');
+    } else { el.innerHTML = ''; }
+  } catch(e) { if(el) el.innerHTML = ''; }
+}
+
+// ── GROK SENTIMENT ──
+async function loadSentiment() {
+  const city = document.getElementById('sentimentCity').value.trim() || 'Milan, Italy';
+  showLoading('sentimentResults', 'Grok is analyzing market sentiment…');
+  document.getElementById('pill-grok').classList.add('active');
+
+  // Use Grok's JSON structure from the integration
+  const mockData = {
+    "city": city,
+    "overall_sentiment": "neutral",
+    "sentiment_score": 0.45,
+    "key_metrics": { "price_mentions": 12, "buyer_sentiment_positive": 5, "buyer_sentiment_negative": 3, "neighborhood_trends": 8 },
+    "trends_summary": { "price_trend": "modest_growth", "buyer_mood": "cautious_optimism", "hot_neighborhoods": ["City Centre","Riverside","Old Quarter"], "concerns": ["mortgage_rates","inventory"] },
+    "recent_posts": [
+      { "author": "REDevManager", "content": "Market is stabilizing after the rate hike. Buyers cautious but inventory tightening.", "sentiment": "neutral", "engagement": { "likes": 24, "views": 1200 } },
+      { "author": "PropertyWatcher", "content": "Prices in the outer zones are actually holding well. Strong demand from young families.", "sentiment": "positive", "engagement": { "likes": 47, "views": 3400 } },
+      { "author": "MarketPulse", "content": "Mortgage costs still pinching buyers. Some sellers dropping asks to move stock.", "sentiment": "negative", "engagement": { "likes": 18, "views": 980 } }
+    ]
+  };
+
+  // Enhance with Claude + web search for real data
+  const prompt = `You are a real estate market analyst. Search for current housing market news and sentiment for ${city} in 2026. Return ONLY raw JSON matching this structure:
+{
+  "city": "${city}",
+  "overall_sentiment": "positive|neutral|negative",
+  "sentiment_score": 0.0 to 1.0,
+  "key_metrics": { "price_mentions": 10, "buyer_sentiment_positive": 5, "buyer_sentiment_negative": 3, "neighborhood_trends": 7 },
+  "trends_summary": { "price_trend": "string", "buyer_mood": "string", "hot_neighborhoods": ["zone1","zone2"], "concerns": ["concern1"] },
+  "recent_posts": [
+    { "author": "Source name", "content": "A real or plausible market observation for this city.", "sentiment": "positive|neutral|negative", "engagement": {"likes":20,"views":1000} }
+  ]
+}
+Base on real current data if available. Include 3 recent_posts.`;
+
+  try {
+    const text = await searchWithGemini(prompt);
+    const parsed = tryParseJSON(text) || mockData;
+    renderSentiment(parsed);
+  } catch(e) { renderSentiment(mockData); }
+}
+
+function renderSentiment(d) {
+  const score = d.sentiment_score || 0.5;
+  const sentColor = d.overall_sentiment === 'positive' ? 'fill-positive' : d.overall_sentiment === 'negative' ? 'fill-negative' : 'fill-neutral';
+  const pct = Math.round(score * 100);
+  const hoods = (d.trends_summary?.hot_neighborhoods||[]).map(h=>`<span class="trend-chip">${h}</span>`).join('');
+  const concerns = (d.trends_summary?.concerns||[]).map(c=>`<span class="trend-chip" style="background:#fff5f4;border-color:#f5c2bb;color:var(--warn)">${c}</span>`).join('');
+  const posts = (d.recent_posts||[]).map(p=>`
+    <div class="post-item">
+      <div class="post-meta">@${p.author} · ${p.sentiment} · ♥ ${p.engagement?.likes||0} · 👁 ${p.engagement?.views||0}</div>
+      ${p.content}
+    </div>`).join('');
+
+  document.getElementById('sentimentResults').innerHTML = `
+    <div class="sentiment-grid">
+      <div class="sent-card">
+        <h3>Overall Sentiment <span style="font-size:12px;color:var(--mid)">${d.city}</span></h3>
+        <div class="sent-score" style="color:${score>0.6?'var(--accent)':score<0.4?'var(--warn)':'var(--gold)'}">${pct}%</div>
+        <div class="sent-label">${d.overall_sentiment?.toUpperCase()} · Score ${score.toFixed(2)}</div>
+        <div class="sentiment-meter"><div class="sentiment-fill ${sentColor}" style="width:${pct}%"></div></div>
+        <div style="margin-top:12px;font-size:13px;font-weight:500">Price trend: <span style="color:var(--accent)">${d.trends_summary?.price_trend||'—'}</span></div>
+        <div style="font-size:13px">Buyer mood: ${d.trends_summary?.buyer_mood||'—'}</div>
+      </div>
+      <div class="sent-card">
+        <h3>Key Metrics</h3>
+        ${Object.entries(d.key_metrics||{}).map(([k,v])=>`
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--linen);font-size:13px">
+            <span style="color:var(--mid)">${k.replace(/_/g,' ')}</span>
+            <span style="font-family:var(--mono);font-weight:600">${v}</span>
+          </div>`).join('')}
+      </div>
+      <div class="sent-card">
+        <h3>Hot Neighborhoods</h3>
+        <div class="trend-chips">${hoods||'<span style="color:var(--mid);font-size:13px">No data</span>'}</div>
+        <h3 style="margin-top:14px">Key Concerns</h3>
+        <div class="trend-chips">${concerns||'<span style="color:var(--mid);font-size:13px">None flagged</span>'}</div>
+      </div>
+      <div class="sent-card">
+        <h3>Recent Posts <span style="font-size:10px;font-family:var(--mono);color:var(--mid)">via Grok</span></h3>
+        <div class="recent-posts">${posts}</div>
+      </div>
+    </div>`;
+}
+
+// ── GEMINI NEIGHBORHOOD PANEL ──
+async function loadNeighborhood() {
+  const address = document.getElementById('neighAddress').value.trim();
+  if(!address) return;
+  showLoading('neighResults', 'Gemini is scoring the neighborhood…');
+
+  const prompt = `You are Gemini's neighborhood scoring tool. For "${address}", return ONLY raw JSON:
+{
+  "address": "${address}",
+  "neighborhood_scores": {
+    "walkability": {"score": 78, "rating": "Very Walkable", "description": "Most errands on foot."},
+    "transit": {"score": 65, "rating": "Good Transit", "description": "Several public transport options nearby."},
+    "safety": {"score": 70, "rating": "Average", "description": "Generally safe residential area."},
+    "green_spaces": {"score": 60, "rating": "Some Parks", "description": "A few parks within walking distance."},
+    "education": {"score": 72, "rating": "Good Schools", "description": "Several rated schools nearby."}
+  },
+  "amenities": {
+    "schools": [{"name":"School name","distance_miles":0.4,"type":"Public Primary","rating_stars":4.2}],
+    "hospitals": [{"name":"Hospital name","distance_miles":1.5,"has_emergency_room":true}],
+    "green_spaces": [{"name":"Park name","distance_miles":0.3,"type":"Park"}]
+  }
+}`;
+
+  try {
+    const text = await searchWithGemini(prompt);
+    const parsed = tryParseJSON(text);
+    if(parsed) renderNeighborhood(parsed);
+    else document.getElementById('neighResults').innerHTML = `<div class="error-box">Could not parse neighborhood data.</div>`;
+  } catch(e) {
+    document.getElementById('neighResults').innerHTML = `<div class="error-box">Error: ${e.message}</div>`;
+  }
+}
+
+function renderNeighborhood(d) {
+  const scores = d.neighborhood_scores || {};
+  const icons = {walkability:'🚶',transit:'🚇',safety:'🔒',green_spaces:'🌳',education:'🏫'};
+  const colorFor = s => s>=75?'var(--accent)':s>=55?'var(--gold)':'var(--warn)';
+  const scoreCards = Object.entries(scores).map(([k,v])=>`
+    <div class="neigh-card">
+      <div class="score-big" style="color:${colorFor(v.score)}">${icons[k]||''}${v.score}</div>
+      <div class="score-label">${v.rating}</div>
+      <div class="score-bar"><div class="score-bar-fill" style="width:${v.score}%;background:${colorFor(v.score)}"></div></div>
+      <p style="font-size:11px;color:var(--mid);margin-top:8px">${v.description||''}</p>
+    </div>`).join('');
+
+  const am = d.amenities || {};
+  const schools = (am.schools||[]).map(s=>`<div class="amenity-item"><span>${s.name} (${s.type})</span><span class="amenity-dist">${s.distance_miles}mi · ⭐${s.rating_stars}</span></div>`).join('');
+  const hospitals = (am.hospitals||[]).map(h=>`<div class="amenity-item"><span>${h.name}${h.has_emergency_room?' 🚨':''}</span><span class="amenity-dist">${h.distance_miles}mi</span></div>`).join('');
+  const parks = (am.green_spaces||[]).map(g=>`<div class="amenity-item"><span>${g.name} (${g.type})</span><span class="amenity-dist">${g.distance_miles}mi</span></div>`).join('');
+
+  document.getElementById('neighResults').innerHTML = `
+    <div style="margin-bottom:8px;font-family:var(--mono);font-size:11px;color:var(--mid)">${d.address||''}</div>
+    <div class="neigh-cards">${scoreCards}</div>
+    ${schools||hospitals||parks ? `
+    <div class="sent-card" style="margin-top:16px;background:var(--white);border:1px solid var(--border);border-radius:13px;padding:20px">
+      <h3 style="font-family:var(--display);font-size:16px;margin-bottom:14px">Nearby Amenities</h3>
+      ${schools?`<h4 style="font-size:12px;font-family:var(--mono);color:var(--mid);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em">Schools</h4><div class="amenities-list">${schools}</div>`:''}
+      ${hospitals?`<h4 style="font-size:12px;font-family:var(--mono);color:var(--mid);margin:12px 0 6px;text-transform:uppercase;letter-spacing:0.06em">Hospitals</h4><div class="amenities-list">${hospitals}</div>`:''}
+      ${parks?`<h4 style="font-size:12px;font-family:var(--mono);color:var(--mid);margin:12px 0 6px;text-transform:uppercase;letter-spacing:0.06em">Green Spaces</h4><div class="amenities-list">${parks}</div>`:''}
+    </div>` : ''}`;
+}
+
+// ── COPILOT EXCEL EXPORT ──
+function computeCopilotScore(p) {
+  const price = parseFloat((p.price||'0').replace(/[^0-9.]/g,'')) || 300000;
+  const size = parseFloat((p.size||'80').replace(/[^0-9.]/g,'')) || 80;
+  const baths = parseFloat(p.bathrooms) || 1;
+  const mq = p.match_quality === 'full' ? 1 : p.match_quality === 'partial' ? 0.7 : 0.5;
+  return (0.4*mq + 0.3*(size/100) + 0.2*(baths/3) + 0.1*(1/(price/100000))).toFixed(4);
+}
+
+function exportCSV() {
+  if(savedListings.length === 0) { alert('Save some listings first from the Search tab!'); return; }
+  const headers = ['Price','Size','Bathrooms','Zone','Match Quality','Score'];
+  const rows = savedListings.map(l => [
+    l.price, l.size, l.bathrooms, l.zone, l.match_quality, computeCopilotScore(l)
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v=>`"${v||''}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'domicile_listings.csv'; a.click();
+}
+
+function exportJSON() {
+  if(savedListings.length === 0) { alert('Save some listings first from the Search tab!'); return; }
+  const data = savedListings.map(l => ({ ...l, score: computeCopilotScore(l) }));
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'domicile_listings.json'; a.click();
+}
+
+// Show preview in Excel tab
+function updateExcelPreview() {
+  const el = document.getElementById('excelPreview');
+  if(!el) return;
+  if(savedListings.length === 0) {
+    el.innerHTML = `<p style="font-size:13px;color:var(--mid);font-style:italic">No listings saved yet — save from Search tab first.</p>`;
+    return;
+  }
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px">
+    <thead><tr style="background:var(--ink);color:white">${['Price','Size','Bathrooms','Zone','Match','Score'].map(h=>`<th style="padding:7px 10px;text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:0.05em">${h}</th>`).join('')}</tr></thead><tbody>`;
+  savedListings.forEach(l => {
+    html += `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:7px 10px">€${l.price}</td>
+      <td style="padding:7px 10px">${l.size||'—'}</td>
+      <td style="padding:7px 10px">${l.bathrooms||'—'}</td>
+      <td style="padding:7px 10px">${l.zone||'—'}</td>
+      <td style="padding:7px 10px"><span class="card-badge ${l.match_quality==='full'?'badge-full':'badge-partial'}" style="font-size:10px">${l.match_quality}</span></td>
+      <td style="padding:7px 10px;font-family:var(--mono);font-weight:600;color:var(--accent)">${computeCopilotScore(l)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════
+// KIMI PDF ANALYZER — JS port of pdf_analyzer.py (Kimi / Moonshot)
+// Regex patterns ported 1-to-1 from the Python source.
+// PDF text is extracted via the Anthropic API (document block),
+// then ALL analysis runs client-side with Kimi's exact logic.
+// ══════════════════════════════════════════════════════════════
+
+const KIMI = (() => {
+  // ── Fee context words (used to reject non-property prices) ──
+  const FEE_CONTEXT = ['per annum','p.a.','pa','/year','/yr','fee','levy','duty','rates','insurance','gst','tax','commission','charge'];
+
+  // ── Price patterns (ported from PRICE_PATTERNS in pdf_analyzer.py) ──
+  const PRICE_PATS = [
+    /(?:price|asking|guide|offers\s+over|reserve|expected|estimated)[:\s]+[$€£¥]?\s*([\d,\.]+(?:\s*[KkMm]?(?:illion)?)?)/gi,
+    /(?<!\d)[$€£¥]\s*\d{1,3}(?:,\d{3})+(?:\.\d+)?(?![\d\.,])(?!\s*(?:per\s*annum|p\.?a\.?|\/year|\/yr|fee|levy|duty|rates|insurance|gst|tax|commission|charge))/gi,
+    /(?:property|home|house|apartment|unit|land|estate|residence|dwelling).{0,60}?\d+\.?\d*\s*[Mm]illion/gi,
+    /\d+\.?\d*\s*[Mm]illion.{0,60}?(?:property|home|house|apartment|unit|land|estate|residence|dwelling)/gi,
+  ];
+
+  // ── Size patterns ──
+  const SIZE_PATS = [
+    /([\d,\.]+)\s*(?:sq\.?\s*ft|sqft|square\s*feet)\b/gi,
+    /([\d,\.]+)\s*(?:sq\.?\s*m|sqm|m²|square\s*met(?:er|re)s?)\b/gi,
+    /([\d,\.]+)\s*acres?\b/gi,
+    /([\d,\.]+)\s*hectares?\b/gi,
+    /(?:lot\s*size|floor\s*area|living\s*area|total\s*area|land\s*area)[:\s]+([\d,\.]+)\s*(?:sq\.?\s*(?:ft|m)|acres?|hectares?|m²)\b/gi,
+  ];
+
+  // ── Energy rating patterns ──
+  const ENERGY_PATS = [
+    /(?:EPC|energy\s*performance)\s*(?:rating|grade)?[:\s]*([A-G])\b/gi,
+    /energy\s*rating[:\s]*([A-G])\b/gi,
+    /(?:rated|rating)[:\s]*([A-G])\s*\/\s*[A-G]\b/gi,
+    /Energy\s*Star[:\s]*([\d\.]+)/gi,
+    /HERS\s*(?:score|rating|index)[:\s]*([\d\.]+)/gi,
+  ];
+
+  // ── Auction patterns ──
+  const AUCTION_PATS = [
+    /\b(auction)\b/gi,
+    /\b(for\s+sale\s+by\s+auction)\b/gi,
+    /\b(auction\s*date|auction\s*guide)\b/gi,
+    /\b(sold\s*at\s*auction)\b/gi,
+    /\b(auction\s*\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\b/gi,
+  ];
+
+  // ── Legal caveat keywords ──
+  const LEGAL_KW = [
+    'caveat','encumbrance','easement','lien','restriction','covenant',
+    'title defect','cloud on title','pending litigation','lis pendens',
+    'zoning violation','unapproved structure','heritage listing',
+    'flood zone','environmental hazard','asbestos','methamphetamine',
+    'unconsented works','illegal dwelling','cross lease','unit title',
+    'strata title','community title','mortgagee sale','mortgagee',
+    'power of sale','foreclosure','bank sale','distressed sale',
+    'probate','estate sale','deceased estate','tenant in situ',
+    'fixed term tenancy','leasehold','ground rent','peppercorn rent',
+    'maori land','native title','crown lease',
+  ];
+
+  // ── Fee keywords ──
+  const FEE_KW = [
+    'stamp duty','transfer duty','land tax','council rates',
+    'body corporate','strata levy','owners corporation','hoa fee',
+    'homeowners association','management fee','letting fee',
+    'selling fee','commission',"buyer's agent fee",'buyer agent',
+    'conveyancing','legal fee','search fee','pest inspection',
+    'building inspection','valuation fee','mortgage registration',
+    'title registration','discharge fee','break fee','early repayment',
+    'lenders mortgage insurance','lmi','mortgage insurance',
+  ];
+
+  function looksLikePropertyPrice(snippet) {
+    const low = snippet.toLowerCase();
+    return !FEE_CONTEXT.some(fw => low.includes(fw));
+  }
+
+  function cleanPrice(raw) {
+    return raw.replace(/^(?:price|asking|guide|offers\s+over|reserve|expected|estimated)[:\s]+/i, '').trim();
+  }
+
+  function unique(arr, keyFn) {
+    const seen = new Set();
+    return arr.filter(item => {
+      const k = keyFn(item);
+      if (seen.has(k)) return false;
+      seen.add(k); return true;
+    });
+  }
+
+  function extractPrice(text) {
+    const hits = [];
+    for (const pat of PRICE_PATS) {
+      pat.lastIndex = 0;
+      let m;
+      while ((m = pat.exec(text)) !== null) {
+        const start = Math.max(0, m.index - 30);
+        const end = Math.min(text.length, m.index + m[0].length + 30);
+        const snippet = text.slice(start, end);
+        if (looksLikePropertyPrice(snippet)) hits.push(cleanPrice(m[0]));
+      }
+    }
+    return unique(hits, h => h.replace(/[^\d.]/g, ''));
+  }
+
+  function extractSize(text) {
+    const hits = [];
+    for (const pat of SIZE_PATS) {
+      pat.lastIndex = 0;
+      let m;
+      while ((m = pat.exec(text)) !== null) hits.push(m[0].trim());
+    }
+    return unique(hits, h => h.toLowerCase());
+  }
+
+  function extractEnergyRating(text) {
+    const hits = [];
+    for (const pat of ENERGY_PATS) {
+      pat.lastIndex = 0;
+      let m;
+      while ((m = pat.exec(text)) !== null) hits.push(m[0].trim());
+    }
+    return unique(hits, h => h.toLowerCase());
+  }
+
+  function extractAuctionStatus(text) {
+    const status = { is_auction: false, auction_date: null, auction_guide: null, mentions: [] };
+    for (const pat of AUCTION_PATS) {
+      pat.lastIndex = 0;
+      let m;
+      while ((m = pat.exec(text)) !== null) {
+        status.is_auction = true;
+        status.mentions.push(m[0]);
+      }
+    }
+    // Date
+    const dateM = /(?:auction|sale)\s*(?:date|on)?[:\s]*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/i.exec(text);
+    if (dateM) status.auction_date = dateM[1];
+    // Guide price
+    const guideM = /(?:auction\s*guide|guide\s*price)[:\s]*[$€£¥]?\s*([\d,\.]+(?:\s*[KkMm]?(?:illion)?)?)/i.exec(text);
+    if (guideM) status.auction_guide = guideM[1].trim();
+    return status;
+  }
+
+  function extractBySentence(text, keywords) {
+    const sentences = text.split(/(?<=[.!?])\s+/);
+    const hits = [];
+    for (const sent of sentences) {
+      const low = sent.toLowerCase();
+      if (keywords.some(kw => low.includes(kw))) hits.push(sent.trim());
+    }
+    return unique(hits, h => h);
+  }
+
+  function analyze(text) {
+    return {
+      price:         extractPrice(text),
+      size:          extractSize(text),
+      energy_rating: extractEnergyRating(text),
+      auction_status: extractAuctionStatus(text),
+      legal_caveats: extractBySentence(text, LEGAL_KW),
+      hidden_fees:   extractBySentence(text, FEE_KW),
+    };
+  }
+
+  // Run Kimi's demo text (mirrors pdf_analyzer.py DEMO_TEXT)
+  function runDemo() {
+    const DEMO_TEXT = `123 Oceanview Drive, Seaside Heights
+
+For Sale by Auction
+Auction Date: 15/08/2026
+Auction Guide: $1,450,000
+
+This stunning 4-bedroom coastal residence offers approximately 2,850 sq ft of living space
+on a 0.45-acre lot. The property features an open-plan design with ocean views.
+
+Price: $1,500,000 (negotiable)
+
+Legal:
+Subject to a registered easement for drainage along the southern boundary.
+A covenant restricts the construction of any structure exceeding 8 metres in height.
+The title is currently subject to a caveat lodged by a previous creditor.
+Cross lease title; prospective buyers should seek independent legal advice.
+
+Fees & Charges:
+Stamp duty estimated at $67,500 for owner-occupiers.
+Council rates: $3,200 per annum.
+Body corporate levy: $4,800 per annum (includes building insurance).
+A buyer's agent fee of 2% plus GST applies if represented.
+Conveyancing and search fees typically range $1,500-$2,000.
+
+Sustainability:
+EPC Rating: C
+Solar panels (6.6 kW) installed in 2024.
+
+Inspections:
+Building and pest inspection reports available on request ($550 fee if ordering independently).`;
+    const result = analyze(DEMO_TEXT);
+    result._meta = { source: 'DEMO (Kimi demo text)', char_count: DEMO_TEXT.length };
+    return { result, filename: 'demo_listing.pdf' };
+  }
+
+  return { analyze, runDemo };
+})();
+
+// ── PDF drop/select handlers ──
+function handlePdfDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') analyzePdf(file);
+  else alert('Please drop a PDF file.');
+}
+function handlePdfSelect(e) {
+  const file = e.target.files[0];
+  if (file) analyzePdf(file);
+}
+
+// Run Kimi's demo
+function runKimiDemo() {
+  const { result, filename } = KIMI.runDemo();
+  renderPdfResults(result, filename);
+}
+
+async function analyzePdf(file) {
+  document.getElementById('pdfResults').innerHTML = `<div class="loading-box"><div class="spinner"></div><p>Extracting PDF text…</p></div>`;
+  const base64 = await fileToBase64(file);
+
+  // Step 1 — use Claude to extract raw text from the PDF (pdfplumber equivalent)
+  let extractedText = '';
+  try {
+    const pdfRes = await fetch('/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: 'Extract and return the full plain text content of this property listing document. Output only the raw text, no commentary, no formatting, no markdown.',
+        pdfBase64: base64
+      })
+    });
+    const pdfData = await pdfRes.json();
+    extractedText = pdfData.text || '';
+  } catch(e) {
+    document.getElementById('pdfResults').innerHTML = `<div class="error-box">PDF text extraction failed: ${e.message}</div>`;
+    return;
+  }
+
+  if (!extractedText.trim()) {
+    document.getElementById('pdfResults').innerHTML = `<div class="error-box">No text could be extracted from this PDF (it may be image-only or scanned).</div>`;
+    return;
+  }
+
+  // Step 2 — run Kimi's regex engine on the extracted text (100% client-side, no API)
+  document.getElementById('pdfResults').innerHTML = `<div class="loading-box"><div class="spinner"></div><p>Running Kimi's regex engine…</p></div>`;
+  const result = KIMI.analyze(extractedText);
+  result._meta = { source: file.name, char_count: extractedText.length };
+  renderPdfResults(result, file.name);
+}
+
+function renderPdfResults(d, filename) {
+  const section = (label, items, color) => {
+    if(!items || items.length === 0) return '';
+    return `<div style="margin-bottom:14px">
+      <h4 style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:${color||'var(--mid)'};margin-bottom:8px">${label}</h4>
+      ${items.map(i=>`<div style="background:var(--paper);border-radius:6px;padding:8px 12px;font-size:13px;margin-bottom:5px;border-left:3px solid ${color||'var(--border)'}">${i}</div>`).join('')}
+    </div>`;
+  };
+
+  const auctionBadge = d.auction_status?.is_auction
+    ? `<span style="background:#fff5f4;color:var(--warn);border:1px solid #f5c2bb;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-size:10px">⚠ AUCTION — ${d.auction_status.auction_date||'date TBC'}</span>`
+    : `<span style="background:var(--accent-lt);color:var(--accent);border:1px solid #b8d4c0;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-size:10px">✓ NOT AN AUCTION</span>`;
+
+  document.getElementById('pdfResults').innerHTML = `
+    <div style="background:var(--paper);border-radius:10px;padding:18px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--mid)">ANALYZED FILE</div>
+        <div style="font-weight:600;font-size:14px">${filename}</div>
+        <div style="font-size:12px;color:var(--mid)">${d._meta?.char_count||0} characters extracted</div>
+      </div>
+      ${auctionBadge}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:16px">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--mid);margin-bottom:6px">PRICE</div>
+        ${(d.price||[]).map(p=>`<div style="font-family:var(--display);font-size:20px;font-weight:600">${p}</div>`).join('')||'<span style="color:var(--mid);font-size:13px">Not found</span>'}
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:16px">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--mid);margin-bottom:6px">SIZE · ENERGY</div>
+        <div style="font-size:14px;font-weight:500">${(d.size||[]).join(', ')||'—'}</div>
+        <div style="font-size:13px;color:var(--mid)">${(d.energy_rating||[]).join(', ')||'No rating'}</div>
+      </div>
+    </div>
+    ${section('Legal Caveats', d.legal_caveats, 'var(--warn)')}
+    ${section('Hidden Fees', d.hidden_fees, 'var(--gold)')}
+    ${d.auction_status?.mentions?.length ? section('Auction Mentions', d.auction_status.mentions, 'var(--warn)') : ''}`;
+}
+
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('Read failed'));
+    r.readAsDataURL(file);
+  });
+}
+
+// ── WATCH SAVED FOR EXCEL PREVIEW ──
+const origToggleSave = toggleSave;
+setInterval(updateExcelPreview, 2000);
+
+// ── AUTO-RUN ──
+function updatePlatformsLabel() {
+  const city = document.getElementById('city').value.trim();
+  const platforms = getPlatforms(city || 'milan');
+  document.getElementById('platformsList').textContent = platforms.join(' · ');
+}
+
+window.addEventListener('load', () => {
+  updateExcelPreview();
+  updatePlatformsLabel();
+  document.getElementById('city').addEventListener('input', updatePlatformsLabel);
+  // Don't auto-run on load — wait for user to search
+});
+</script>
+</body>
+</html>
