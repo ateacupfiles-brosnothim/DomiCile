@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+sqlalchemy
+psycopg2-binary
+python-jose
+bcrypt
+openai
+python-dotenv
+httpx
+pytest
+pytest-asyncio
+boto3
+alembic
+passlib[bcrypt]
+requests
