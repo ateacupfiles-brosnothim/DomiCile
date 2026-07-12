@@ -42,11 +42,11 @@ tasks-app/
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── App.tsx
-│   │   ├── main.tsx
-│   │   └── components/
-│   │       ├── Login.tsx
-│   │       └── TaskList.tsx
-│   └── vite.config.ts
+│      ├── App.tsx
+│      ├── main.tsx
+│      └── components/
+│          ├── Login.tsx
+│          └── TaskList.tsx
+│   
 ├── API_DOCS.md
 └── README.md
